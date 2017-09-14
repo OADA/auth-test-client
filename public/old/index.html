@@ -1,0 +1,153 @@
+<!-- Copyright 2014 Open Ag Data Alliance
+
+     Licensed under the Apache License, Version 2.0 (the 'License');
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an 'AS IS' BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<html>
+<head>
+    <script src=main.browserify.js></script>
+    <script src=https://medialize.github.io/URI.js/src/URI.js></script>
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.2/styles/default.min.css'>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.2/highlight.min.js'></script>
+    <script>
+        var options = {
+            'client_id': '3klaxu838akahf38acucaix73@identity.oada-dev.com',
+            'redirect_uri': 'https://client.oada-dev.com/redirect.html',
+            scope: 'bookmarks.machines.harvesters bookmarks.fields bookmarks.clients resources',
+            // Make it always ask for consent again
+            prompt: 'consent'
+        };
+
+        // Ugly. Object.assign() would be nice...
+        var optionsIdTokenToken = {
+            'client_id': options['client_id'],
+            'redirect_uri': options['redirect_uri'],
+            scope: options.scope,
+            prompt: options.prompt,
+            'response_type': 'id_token token'
+        };
+
+        var googleOptions = {
+            'client_id': '222922449179-va3k4ldqsg9aq5kmv4db8jvlijvv5s8p' +
+                '.apps.googleusercontent.com',
+            'redirect_uri': URI('redirect.html')
+                .absoluteTo(window.location.href),
+            scope: 'https://mail.google.com/',
+            // Make it always ask for consent again
+            prompt: 'consent',
+        };
+
+        var callback = function(err, token) {
+            'use strict';
+
+            if (err) {
+                if (console && (typeof console.dir === 'function')) {
+                    console.dir(err);
+                }
+                alert(err);
+            }
+
+            var block = document.getElementById('token');
+
+            block.innerHTML =
+                JSON.stringify(token, undefined, 4);
+            hljs.highlightBlock(block);
+        };
+    </script>
+</head>
+<body>
+
+<h1>OAuth 2.0 Implicit Flow</h1>
+<h2>Web Client</h2>
+<button onclick='oadaIdClient.getIDToken("identity.oada-dev.com",
+    optionsIdTokenToken, callback)'>
+    ID Token and Access Token from identity.oada-dev.com</button>
+<button onclick='oadaIdClient.getIDToken("identity.oada-dev.com", options,
+    callback)'>ID Token from identity.oada-dev.com</button>
+<button onclick='oadaIdClient.getAccessToken("identity.oada-dev.com", options,
+    callback)'>Access Token from identity.oada-dev.com</button>
+<button onclick='oadaIdClient.getAccessToken("provider.oada-dev.com", options,
+    callback)'>Access Token from provider.oada-dev.com</button>
+
+<h2>Web Client to Unknown Provider</h2>
+
+<div>
+    <label for='id_tok_domain'>Domain:</label>
+    <input id='id_tok_domain' type='text' />
+    <label for='id_tok_scope'>Scope:</label>
+    <input id='id_tok_scope' type='text' value='openid profile' />
+    <button onclick='var opts = optionsIdTokenToken; opts.scope = document.getElementById("id_tok_scope").value; oadaIdClient.getIDToken(document.getElementById("id_tok_domain").value, opts, callback)'>Get ID Token and Access Token</button>
+</div>
+<br />
+<div>
+    <label for='id_domain'>Domain:</label>
+    <input id='id_domain' type='text' />
+    <label for='id_scope'>Scope:</label>
+    <input id='id_scope' type='text' value='openid profile' />
+    <button onclick='var opts = options; opts.scope = document.getElementById("id_scope").value; oadaIdClient.getIDToken(document.getElementById("id_domain").value, opts, callback)'>Get ID Token</button>
+</div>
+<br />
+<div>
+    <label for='ac_domain'>Domain:</label>
+    <input id='ac_domain' type='text' />
+    <label for='ac_scope'>Scope:</label>
+    <input id='ac_scope' type='text' value='bookmarks.clients' />
+    <button onclick='var opts = options; opts.scope = document.getElementById("ac_scope").value; oadaIdClient.getAccessToken(document.getElementById("ac_domain").value, opts, callback)'>Get Access Token</button>
+</div>
+
+<h2>ID/Access Token Result</h2>
+
+<pre class='json' id='token'>Choose an OAuth 2.0/OpenID Connect method from above</pre>
+
+<hr />
+
+<h1>OAuth 2.0 Code Flow<h1>
+<h2>Server to Server</h2>
+
+<a href='/who_identity'>ID Token from identity.oada-dev.com</a> |
+<a href='/get_identity'>Access Token from identity.oada-dev.com</a> |
+<a href='/get_provider'>Access Token from provider.oada-dev.com</a>
+
+<h2>Server to Unknown Server</h1>
+<form action='/get_identity'  method='get'>
+    <div>
+        <label for='domain'>Domain:</label>
+        <input type='text' name='domain' />
+        <label for='scope'>Scope:</label>
+        <input type='text' name='scope' value='bookmarks.clients' />
+        <button type='submit'>Get Access Token</button>
+    </div>
+</form>
+<form action='/who_identity'  method='get'>
+    <div>
+        <label for='domain'>Domain:</label>
+        <input type='text' name='domain' />
+        <label for='scope'>Scope:</label>
+        <input type='text' name='scope' value='openid profile' />
+        <button type='submit'>Get ID Token</button>
+    </div>
+</form>
+<hr />
+
+<h1>Logout</h1>
+
+<a href='https://identity.oada-dev.com/logout'>Logout of
+    identity.oada-dev.com</a>
+<br />
+<br />
+<a href='https://provider.oada-dev.com/logout'>Logout of
+    provider.oada-dev.com</a>
+
+</body>
+</html>
+
